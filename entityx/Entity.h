@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+
 #include "entityx/config.h"
 #include "entityx/Event.h"
 
