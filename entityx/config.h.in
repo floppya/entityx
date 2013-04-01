@@ -1,0 +1,21 @@
+#pragma once
+
+#cmakedefine HAVE_BOOST_SHARED_PTR 1
+#cmakedefine HAVE_STD_SHARED_PTR 1
+#cmakedefine USE_STD_SHARED_PTR 0
+
+// Which shared_ptr implementation should we use?
+#if (HAVE_STD_SHARED_PTR && USE_STD_SHARED_PTR)
+#include <memory>
+namespace entityx {
+using std::make_shared;
+using std::shared_ptr;
+}
+#elif HAVE_BOOST_SHARED_PTR
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+namespace entityx {
+using boost::shared_ptr;
+using boost::make_shared;
+}
+#endif

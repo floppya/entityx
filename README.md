@@ -76,7 +76,7 @@ entity.assign<Position>(1.0f, 2.0f);
 You can also assign existing instances of components:
 
 ```c++
-boost::shared_ptr<Position> position = boost::make_shared<Position>(1.0f, 2.0f);
+entityx::shared_ptr<Position> position = entityx::make_shared<Position>(1.0f, 2.0f);
 entity.assign(position);
 ```
 
@@ -86,8 +86,8 @@ To query all entities with a set of components assigned, use ``EntityManager::en
 
 ```c++
 for (auto entity : entities.entities_with_components<Position, Direction>()) {
-  boost::shared_ptr<Position> position = entity.component<Position>();
-  boost::shared_ptr<Direction> direction = entity.component<Direction>();
+  entityx::shared_ptr<Position> position = entity.component<Position>();
+  entityx::shared_ptr<Direction> direction = entity.component<Direction>();
 
   // Do things with entity, position and direction.
 }
@@ -96,7 +96,7 @@ for (auto entity : entities.entities_with_components<Position, Direction>()) {
 To retrieve a component associated with an entity use ``Entity::component<C>()``:
 
 ```c++
-boost::shared_ptr<Position> position = entity.component<Position>();
+entityx::shared_ptr<Position> position = entity.component<Position>();
 if (position) {
   // Do stuff with position
 }
@@ -117,8 +117,8 @@ A basic movement system might be implemented with something like the following:
 struct MovementSystem : public System<MovementSystem> {
   void update(EntityManager &es, EventManager &events, double dt) override {
     for (auto entity : es.entities_with_components<Position, Direction>()) {
-      boost::shared_ptr<Position> position = entity.component<Position>();
-      boost::shared_ptr<Direction> direction = entity.component<Direction>();
+      entityx::shared_ptr<Position> position = entity.component<Position>();
+      entityx::shared_ptr<Direction> direction = entity.component<Direction>();
 
       position->x += direction->x * dt;
       position->y += direction->y * dt;
@@ -154,7 +154,7 @@ Next we implement our collision system, which emits ``Collision`` objects via an
 class CollisionSystem : public System<CollisionSystem> {
  public:
   void update(EntityManager &es, EventManager &events, double dt) override {
-    boost::shared_ptr<Position> left_position, right_position;
+    entityx::shared_ptr<Position> left_position, right_position;
     for (auto left_entity : es.entities_with_components<Position>()) {
       for (auto right_entity : es.entities_with_components<Position>()) {
         if (collide(left_position, right_position)) {
@@ -192,7 +192,7 @@ Several events are emitted by EntityX itself:
   - `Entity entity` - Entity about to be destroyed.
 - `ComponentAddedEvent<T>` - emitted when a new component is added to an entity.
   - `Entity entity` - Entity that component was added to.
-  - `boost::shared_ptr<T> component` - The component added.
+  - `entityx::shared_ptr<T> component` - The component added.
 
 #### Implementation notes
 
