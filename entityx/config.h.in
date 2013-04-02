@@ -10,6 +10,7 @@
 namespace entityx {
 using std::make_shared;
 using std::shared_ptr;
+using std::static_pointer_cast;
 }
 #elif HAVE_BOOST_SHARED_PTR
 #include <boost/shared_ptr.hpp>
@@ -17,5 +18,6 @@ using std::shared_ptr;
 namespace entityx {
 using boost::shared_ptr;
 using boost::make_shared;
+using boost::static_pointer_cast;
 }
 #endif

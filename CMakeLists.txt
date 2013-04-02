@@ -17,7 +17,7 @@ set(USE_CPP11_STDLIB false CACHE BOOL "Use the C++11 stdlib (-stdlib=libc++).")
 
 if (USE_CPP11_STDLIB)
     set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -DGTEST_USE_OWN_TR1_TUPLE=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     check_cxx_source_compiles(
     "
     #include <memory>

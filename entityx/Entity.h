@@ -379,7 +379,7 @@ class EntityManager : boost::noncopyable {
    */
   template <typename C>
   entityx::shared_ptr<C> assign(Entity::Id entity, entityx::shared_ptr<C> component) {
-    entityx::shared_ptr<BaseComponent> base = boost::static_pointer_cast<BaseComponent>(component);
+    entityx::shared_ptr<BaseComponent> base = entityx::static_pointer_cast<BaseComponent>(component);
     accomodate_component(C::family());
     entity_components_.at(C::family()).at(entity) = base;
     entity_component_mask_.at(entity) |= uint64_t(1) << C::family();
@@ -412,7 +412,7 @@ class EntityManager : boost::noncopyable {
       return entityx::shared_ptr<C>();
     }
     entityx::shared_ptr<BaseComponent> c = entity_components_.at(C::family()).at(id);
-    return boost::static_pointer_cast<C>(c);
+    return entityx::static_pointer_cast<C>(c);
   }
 
   /**

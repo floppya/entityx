@@ -118,7 +118,7 @@ class SystemManager : boost::noncopyable {
     assert(it != systems_.end());
     return it == systems_.end()
         ? entityx::shared_ptr<S>()
-        : boost::static_pointer_cast<S>(it->second);
+        : entityx::static_pointer_cast<S>(it->second);
   }
 
   /**
