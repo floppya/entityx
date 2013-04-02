@@ -86,7 +86,7 @@ class Entity {
   void invalidate();
 
   Id id() const { return id_; }
-  EntityManager &manager() { return *manager_; }
+  entityx::shared_ptr<EntityManager> manager() { return manager_; }
 
   template <typename C>
   entityx::shared_ptr<C> assign(entityx::shared_ptr<C> component);
@@ -109,9 +109,9 @@ class Entity {
  private:
   friend class EntityManager;
 
-  Entity(EntityManager *entities, Entity::Id id) : manager_(entities), id_(id) {}
+  Entity(entityx::shared_ptr<EntityManager> manager, Entity::Id id) : manager_(manager), id_(id) {}
 
-  EntityManager *manager_ = nullptr;
+  entityx::shared_ptr<EntityManager> manager_;
   Entity::Id id_ = INVALID;
 };
 
@@ -194,35 +194,27 @@ struct ComponentAddedEvent : public Event<ComponentAddedEvent<T>> {
 
 /**
  * Manages Entity::Id creation and component assignment.
- *
- * eg.
- * EntityManager e;
- *
- * Entity player = e.create();
- *
- * player.assign<Movable>();
- * player.assign<Physical>();
- * player.assign<Scriptable>();
- * shared_ptr<Controllable> controllable = player.assign<Controllable>();
  */
-class EntityManager : boost::noncopyable {
+class EntityManager : public entityx::enable_shared_from_this<EntityManager>, boost::noncopyable {
  public:
   static const int MAX_COMPONENTS = 64;
 
   typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
-  EntityManager(EventManager &event_manager) : event_manager_(event_manager) {}
+  static entityx::shared_ptr<EntityManager> make(EventManager &event_manager) {
+    return entityx::shared_ptr<EntityManager>(new EntityManager(event_manager));
+  }
 
   class View {
    public:
-    typedef boost::function<bool (EntityManager &, Entity::Id)> Predicate;
+    typedef boost::function<bool (entityx::shared_ptr<EntityManager>, Entity::Id)> Predicate;
 
     /// A predicate that excludes entities that don't match the given component mask.
     class ComponentMaskPredicate {
      public:
       ComponentMaskPredicate(const std::vector<ComponentMask> &entity_bits, ComponentMask mask) : entity_bits_(entity_bits), mask_(mask) {}
 
-      bool operator () (EntityManager &, Entity::Id entity) {
+      bool operator () (entityx::shared_ptr<EntityManager>, Entity::Id entity) {
         return (entity_bits_.at(entity) & mask_) == mask_;
       }
 
@@ -247,9 +239,9 @@ class EntityManager : boost::noncopyable {
      private:
       friend class View;
 
-      Iterator() : manager_(nullptr) {}
+      Iterator() {}
 
-      Iterator(EntityManager *manager, const std::vector<Predicate> &predicates,
+      Iterator(entityx::shared_ptr<EntityManager> manager, const std::vector<Predicate> &predicates,
                const std::vector<boost::function<void (Entity::Id)>> &unpackers, Entity::Id entity)
           : manager_(manager), predicates_(predicates), unpackers_(unpackers), i_(entity) {
         next();
@@ -268,14 +260,14 @@ class EntityManager : boost::noncopyable {
 
       bool predicate() {
         for (auto &p : predicates_) {
-          if (!p(*manager_, i_)) {
+          if (!p(manager_, i_)) {
             return false;
           }
         }
         return true;
       }
 
-      EntityManager *manager_;
+      entityx::shared_ptr<EntityManager> manager_;
       const std::vector<Predicate> predicates_;
       std::vector<boost::function<void (Entity::Id)>> unpackers_;
       Entity::Id i_;
@@ -311,22 +303,22 @@ class EntityManager : boost::noncopyable {
 
     template <typename T>
     struct Unpacker {
-      Unpacker(EntityManager *manager, entityx::shared_ptr<T> &c) : manager_(manager), c(c) {}
+      Unpacker(entityx::shared_ptr<EntityManager> manager, entityx::shared_ptr<T> &c) : manager_(manager), c(c) {}
 
       void operator () (Entity::Id id) {
         c = manager_->component<T>(id);
       }
 
      private:
-      EntityManager *manager_;
+      entityx::shared_ptr<EntityManager> manager_;
       entityx::shared_ptr<T> &c;
     };
 
-    View(EntityManager *manager, Predicate predicate) : manager_(manager) {
+    View(entityx::shared_ptr<EntityManager> manager, Predicate predicate) : manager_(manager) {
       predicates_.push_back(predicate);
     }
 
-    EntityManager *manager_;
+    entityx::shared_ptr<EntityManager> manager_;
     std::vector<Predicate> predicates_;
     std::vector<boost::function<void (Entity::Id)>> unpackers_;
   };
@@ -350,8 +342,8 @@ class EntityManager : boost::noncopyable {
       id = free_list_.front();
       free_list_.pop_front();
     }
-    event_manager_.emit<EntityCreatedEvent>(Entity(this, id));
-    return Entity(this, id);
+    event_manager_.emit<EntityCreatedEvent>(Entity(shared_from_this(), id));
+    return Entity(shared_from_this(), id);
   }
 
   /**
@@ -361,7 +353,7 @@ class EntityManager : boost::noncopyable {
    */
   void destroy(Entity::Id entity) {
     assert(entity < entity_component_mask_.size() && "Entity::Id ID outside entity vector range");
-    event_manager_.emit<EntityDestroyedEvent>(Entity(this, entity));
+    event_manager_.emit<EntityDestroyedEvent>(Entity(shared_from_this(), entity));
     for (auto &components : entity_components_) {
       components.at(entity).reset();
     }
@@ -370,7 +362,7 @@ class EntityManager : boost::noncopyable {
   }
 
   Entity get(Entity::Id id) {
-    return Entity(this, id);
+    return Entity(shared_from_this(), id);
   }
 
   /**
@@ -385,7 +377,7 @@ class EntityManager : boost::noncopyable {
     entity_components_.at(C::family()).at(entity) = base;
     entity_component_mask_.at(entity) |= uint64_t(1) << C::family();
 
-    event_manager_.emit<ComponentAddedEvent<C>>(Entity(this, entity), component);
+    event_manager_.emit<ComponentAddedEvent<C>>(Entity(shared_from_this(), entity), component);
     return component;
   }
 
@@ -422,7 +414,7 @@ class EntityManager : boost::noncopyable {
   template <typename C, typename ... Components>
   View entities_with_components() {
     auto mask = component_mask<C, Components ...>();
-    return View(this, View::ComponentMaskPredicate(entity_component_mask_, mask));
+    return View(shared_from_this(), View::ComponentMaskPredicate(entity_component_mask_, mask));
   }
 
   /**
@@ -432,7 +424,7 @@ class EntityManager : boost::noncopyable {
   View entities_with_components(entityx::shared_ptr<C> &c, Components && ... args) {
     auto mask = component_mask(c, args ...);
     return
-        View(this, View::ComponentMaskPredicate(entity_component_mask_, mask))
+        View(shared_from_this(), View::ComponentMaskPredicate(entity_component_mask_, mask))
         .unpack_to(c, args ...);
   }
 
@@ -470,6 +462,9 @@ class EntityManager : boost::noncopyable {
   }
 
  private:
+  EntityManager(EventManager &event_manager) : event_manager_(event_manager) {}
+
+
   template <typename C>
   ComponentMask component_mask() {
     ComponentMask mask;

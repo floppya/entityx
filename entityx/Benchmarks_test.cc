@@ -9,10 +9,10 @@ using namespace entityx;
 
 class BenchmarksTest : public ::testing::Test {
 protected:
- BenchmarksTest() : em(ev) {}
+ BenchmarksTest() : em(EntityManager::make(ev)) {}
 
  EventManager ev;
- EntityManager em;
+ shared_ptr<EntityManager> em;
 };
 
 
@@ -23,7 +23,7 @@ TEST_F(BenchmarksTest, TestCreateEntities) {
   cout << "creating " << count << " entities" << endl;
 
   for (uint64_t i = 0; i < count; i++) {
-    em.create();
+    em->create();
   }
 }
 
@@ -32,7 +32,7 @@ TEST_F(BenchmarksTest, TestDestroyEntities) {
   uint64_t count = 10000000L;
   vector<Entity> entities;
   for (uint64_t i = 0; i < count; i++) {
-    entities.push_back(em.create());
+    entities.push_back(em->create());
   }
 
   boost::timer::auto_cpu_timer t;
@@ -59,7 +59,7 @@ TEST_F(BenchmarksTest, TestCreateEntitiesWithListener) {
 
   vector<Entity> entities;
   for (uint64_t i = 0; i < count; i++) {
-    entities.push_back(em.create());
+    entities.push_back(em->create());
   }
 }
 
@@ -70,7 +70,7 @@ TEST_F(BenchmarksTest, TestDestroyEntitiesWithListener) {
   uint64_t count = 10000000L;
   vector<Entity> entities;
   for (uint64_t i = 0; i < count; i++) {
-    entities.push_back(em.create());
+    entities.push_back(em->create());
   }
 
   boost::timer::auto_cpu_timer t;
@@ -88,7 +88,7 @@ TEST_F(BenchmarksTest, TestEntityIteration) {
   uint64_t count = 10000000L;
   vector<Entity> entities;
   for (uint64_t i = 0; i < count; i++) {
-    auto e = em.create();
+    auto e = em->create();
     e.assign<Position>();
     entities.push_back(e);
   }
@@ -97,7 +97,7 @@ TEST_F(BenchmarksTest, TestEntityIteration) {
   cout << "iterating over " << count << " entities with a component 10 times" << endl;
 
   for (int i = 0; i < 10; ++i) {
-    for (auto e : em.entities_with_components<Position>()) {
+    for (auto e : em->entities_with_components<Position>()) {
       entityx::shared_ptr<Position> position = e.component<Position>();
     }
   }

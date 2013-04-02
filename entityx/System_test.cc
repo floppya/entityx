@@ -37,8 +37,8 @@ class MovementSystem : public System<MovementSystem> {
  public:
   MovementSystem(string label = "") : label(label) {}
 
-  void update(EntityManager &es, EventManager &events, double) override {
-    EntityManager::View entities = es.entities_with_components<Position, Direction>();
+  void update(shared_ptr<EntityManager> es, EventManager &events, double) override {
+    EntityManager::View entities = es->entities_with_components<Position, Direction>();
     shared_ptr<Position> position;
     shared_ptr<Direction> direction;
     for (auto entity : entities) {
@@ -57,7 +57,7 @@ class TestManager : public entityx::Manager {
   std::vector<Entity> entities;
 
   SystemManager &sm() { return system_manager; }
-  EntityManager &em() { return entity_manager; }
+  shared_ptr<EntityManager> em() { return entity_manager; }
 
  protected:
   void configure() override {
@@ -65,7 +65,7 @@ class TestManager : public entityx::Manager {
 
   void initialize() override {
     for (int i = 0; i < 150; ++i) {
-      Entity e = entity_manager.create();
+      Entity e = entity_manager->create();
       entities.push_back(e);
       if (i % 2 == 0)
         e.assign<Position>(1, 2);

@@ -19,7 +19,7 @@ namespace entityx {
 
 class Manager {
  public:
-  Manager() : entity_manager(event_manager), system_manager(entity_manager, event_manager) {}
+  Manager() : entity_manager(EntityManager::make(event_manager)), system_manager(entity_manager, event_manager) {}
   virtual ~Manager() {}
 
   void start();
@@ -50,7 +50,7 @@ class Manager {
   virtual void update(double dt) = 0;
 
   EventManager event_manager;
-  EntityManager entity_manager;
+  entityx::shared_ptr<EntityManager> entity_manager;
   SystemManager system_manager;
 
  private:

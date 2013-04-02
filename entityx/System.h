@@ -43,7 +43,7 @@ class BaseSystem : boost::noncopyable {
    *
    * Called every game step.
    */
-  virtual void update(EntityManager &entities, EventManager &events, double dt) = 0;
+  virtual void update(entityx::shared_ptr<EntityManager> entities, EventManager &events, double dt) = 0;
 
   static Family family_counter_;
 
@@ -55,7 +55,7 @@ class BaseSystem : boost::noncopyable {
  * Use this class when implementing Systems.
  *
  * struct MovementSystem : public System<MovementSystem> {
- *   void update(EntityManager &entities, EventManager &events, double dt) {
+ *   void update(entityx::shared_ptr<EntityManager> entities, EventManager &events, double dt) {
  *     // Do stuff to/with entities...
  *   }
  * }
@@ -74,7 +74,7 @@ class System : public BaseSystem {
 
 class SystemManager : boost::noncopyable {
  public:
-  SystemManager(EntityManager &entities, EventManager &events) : entities_(entities), events_(events) {}
+  SystemManager(entityx::shared_ptr<EntityManager> entities, EventManager &events) : entities_(entities), events_(events) {}
 
   /**
    * Add a System to the SystemManager.
@@ -140,7 +140,7 @@ class SystemManager : boost::noncopyable {
 
  private:
   bool initialized_ = false;
-  EntityManager &entities_;
+  entityx::shared_ptr<EntityManager> entities_;
   EventManager &events_;
   boost::unordered_map<BaseSystem::Family, entityx::shared_ptr<BaseSystem>> systems_;
 };

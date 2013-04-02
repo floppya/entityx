@@ -114,8 +114,8 @@ class EventManager : boost::noncopyable {
    *
    * eg.
    *
-   * EntityManager em;
-   * em.emit<Explosion>(10);
+   * shared_ptr<EventManager> em(make_shared<EventManager>());
+   * em->emit<Explosion>(10);
    *
    */
   template <typename E, typename ... Args>
