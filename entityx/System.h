@@ -72,12 +72,12 @@ class System : public BaseSystem {
 };
 
 
-class SystemManager : boost::noncopyable {
+class SystemManager : public entityx::enable_shared_from_this<SystemManager>, boost::noncopyable {
  public:
-  SystemManager(entityx::shared_ptr<EntityManager> entity_manager,
-                entityx::shared_ptr<EventManager> event_manager) :
-                entity_manager_(entity_manager),
-                event_manager_(event_manager) {}
+  static entityx::shared_ptr<SystemManager> make(entityx::shared_ptr<EntityManager> entity_manager,
+                  entityx::shared_ptr<EventManager> event_manager) {
+    return entityx::shared_ptr<SystemManager>(new SystemManager(entity_manager, event_manager));
+  }
 
   /**
    * Add a System to the SystemManager.
@@ -142,6 +142,11 @@ class SystemManager : boost::noncopyable {
   void configure();
 
  private:
+  SystemManager(entityx::shared_ptr<EntityManager> entity_manager,
+                entityx::shared_ptr<EventManager> event_manager) :
+                entity_manager_(entity_manager),
+                event_manager_(event_manager) {}
+
   bool initialized_ = false;
   entityx::shared_ptr<EntityManager> entity_manager_;
   entityx::shared_ptr<EventManager> event_manager_;

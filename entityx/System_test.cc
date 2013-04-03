@@ -56,7 +56,7 @@ class TestManager : public entityx::Manager {
  public:
   std::vector<Entity> entities;
 
-  SystemManager &sm() { return system_manager; }
+  shared_ptr<SystemManager> sm() { return system_manager; }
   shared_ptr<EntityManager> em() { return entity_manager; }
 
  protected:
@@ -90,18 +90,18 @@ class SystemManagerTest : public ::testing::Test {
 
 
 TEST_F(SystemManagerTest, TestConstructSystemWithArgs) {
-  manager.sm().add<MovementSystem>("movement");
-  manager.sm().configure();
+  manager.sm()->add<MovementSystem>("movement");
+  manager.sm()->configure();
 
-  ASSERT_EQ("movement", manager.sm().system<MovementSystem>()->label);
+  ASSERT_EQ("movement", manager.sm()->system<MovementSystem>()->label);
 }
 
 
 TEST_F(SystemManagerTest, TestApplySystem) {
-  manager.sm().add<MovementSystem>();
-  manager.sm().configure();
+  manager.sm()->add<MovementSystem>();
+  manager.sm()->configure();
 
-  manager.sm().update<MovementSystem>(0.0);
+  manager.sm()->update<MovementSystem>(0.0);
   shared_ptr<Position> position;
   shared_ptr<Direction> direction;
   for (auto entity : manager.entities) {

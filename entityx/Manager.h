@@ -22,7 +22,7 @@ class Manager {
   Manager() :
     event_manager(EventManager::make()),
     entity_manager(EntityManager::make(event_manager)),
-    system_manager(entity_manager, event_manager) {}
+    system_manager(SystemManager::make(entity_manager, event_manager)) {}
   virtual ~Manager() {}
 
   void start();
@@ -54,7 +54,7 @@ class Manager {
 
   entityx::shared_ptr<EventManager> event_manager;
   entityx::shared_ptr<EntityManager> entity_manager;
-  SystemManager system_manager;
+  entityx::shared_ptr<SystemManager> system_manager;
 
  private:
   boost::timer timer_;
