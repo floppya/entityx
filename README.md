@@ -244,19 +244,19 @@ EntityX has the following build and runtime requirements:
 
 Once these dependencies are installed you should be able to build and install EntityX as below. The following options can be passed to cmake to modify how EntityX is built:
 
-- `-DBUILD_TESTING=1` - Build tests (run with `make test`).
-- `-DRUN_BENCHMARKS=1` - In conjunction with `-DBUILD_TESTING=1`, also build benchmarks.
-- `-DUSE_CPP11_STDLIB=1` - For Clang, specify whether to use `-stdlib=libc++`.
-- `-DUSE_STD_SHARED_PTR=1` - Use `std::shared_ptr<T>` (and friends) rather than the Boost equivalents. This does not eliminate the need for Boost, but is useful if the rest of your application uses `std::shared_ptr<T>`.
+- `-DENTITYX_BUILD_TESTING=1` - Build tests (run with `make test`).
+- `-DENTITYX_RUN_BENCHMARKS=1` - In conjunction with `-DENTITYX_BUILD_TESTING=1`, also build benchmarks.
+- `-DENTITYX_USE_CPP11_STDLIB=1` - For Clang, specify whether to use `-stdlib=libc++`.
+- `-DENTITYX_USE_STD_SHARED_PTR=1` - Use `std::shared_ptr<T>` (and friends) rather than the Boost equivalents. This does not eliminate the need for Boost, but is useful if the rest of your application uses `std::shared_ptr<T>`.
 
-For a production build, you'll typically only need `-DUSE_STD_SHARED_PTR=1`, if any.
+For a production build, you'll typically only need the `-DENTITYX_USE_STD_SHARED_PTR=1` flag, if any.
 
-Then to build and install:
+Once you have selected your flags, build and install with:
 
 ```sh
 mkdir build
 cd build
-cmake [-DBUILD_TESTING=1] [-DRUN_BENCHMARKS=1] [-DUSE_CPP11_STDLIB=1] [-DUSE_STD_SHARED_PTR=1] ..
+cmake [-DENTITYX_BUILD_TESTING=1] [-DENTITYX_RUN_BENCHMARKS=1] [-DENTITYX_USE_CPP11_STDLIB=1] [-DENTITYX_USE_STD_SHARED_PTR=1] ..
 make
 make install
 ```

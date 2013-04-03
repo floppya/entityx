@@ -23,7 +23,6 @@
 #include <utility>
 #include <vector>
 
-
 #include "entityx/config.h"
 #include "entityx/Event.h"
 
@@ -196,8 +195,6 @@ struct ComponentAddedEvent : public Event<ComponentAddedEvent<T>> {
  */
 class EntityManager : public entityx::enable_shared_from_this<EntityManager>, boost::noncopyable {
  public:
-  static const int MAX_COMPONENTS = 64;
-
   typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
   static entityx::shared_ptr<EntityManager> make(entityx::shared_ptr<EventManager> event_manager) {

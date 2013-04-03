@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 2.8)
 project(EntityX)
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
-set(RUN_BENCHMARKS false CACHE BOOL "Run benchmarks")
+set(ENTITYX_BUILD_TESTING false CACHE BOOL "Enable building of tests.")
+set(ENTITYX_RUN_BENCHMARKS false CACHE BOOL "Run benchmarks (in conjunction with -DENTITYX_BUILD_TESTING=1).")
+set(ENTITYX_MAX_COMPONENTS 64 CACHE STRING "Set the maximum number of components.")
+set(ENTITYX_USE_CPP11_STDLIB false CACHE BOOL "Use the C++11 stdlib (-stdlib=libc++).")
+# Check for which shared_ptr implementation to use.
+set(ENTITYX_USE_STD_SHARED_PTR false CACHE BOOL "Use std::shared_ptr<T> rather than boost::shared_ptr<T>?")
 
 include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(CheckCXXSourceCompiles)
@@ -20,9 +25,7 @@ include(CheckCXX11Features.cmake)
 # Misc features
 check_include_file("stdint.h" HAVE_STDINT_H)
 
-set(USE_CPP11_STDLIB false CACHE BOOL "Use the C++11 stdlib (-stdlib=libc++).")
-
-if (USE_CPP11_STDLIB)
+if (ENTITYX_USE_CPP11_STDLIB)
     set(OLD_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     check_cxx_source_compiles(
@@ -33,21 +36,18 @@ if (USE_CPP11_STDLIB)
         std::shared_ptr<int>();
     }
     "
-    HAVE_CXX11_STDLIB
+    ENTITYX_HAVE_CXX11_STDLIB
     )
 
-    if (NOT HAVE_CXX11_STDLIB)
+    if (NOT ENTITYX_HAVE_CXX11_STDLIB)
         message("-- Not using -stdlib=libc++ (test failed to build)")
         set(CMAKE_CXX_FLAGS "${OLD_CMAKE_CXX_FLAGS}")
     else ()
         message("-- Using -stdlib=libc++")
     endif ()
 else ()
-    message("-- Using default stdlib (try -DUSE_CPP11_STDLIB=1 to use -stdlib=libc++)")
+    message("-- Using default stdlib (try -DENTITYX_USE_CPP11_STDLIB=1 to use -stdlib=libc++)")
 endif ()
-
-# Check for which shared_ptr implementation to use.
-set(USE_STD_SHARED_PTR false CACHE BOOL "Use std::shared_ptr<T> rather than boost::shared_ptr<T>?")
 
 check_cxx_source_compiles(
 "
@@ -55,7 +55,7 @@ check_cxx_source_compiles(
 
 int main() { std::shared_ptr<int>(); }
 "
-HAVE_STD_SHARED_PTR
+ENTITYX_HAVE_STD_SHARED_PTR
 )
 
 check_cxx_source_compiles(
@@ -64,16 +64,16 @@ check_cxx_source_compiles(
 
 int main() { boost::shared_ptr<int>(); }
 "
-HAVE_BOOST_SHARED_PTR
+ENTITYX_HAVE_BOOST_SHARED_PTR
 )
 
-if (HAVE_STD_SHARED_PTR AND USE_STD_SHARED_PTR)
+if (ENTITYX_HAVE_STD_SHARED_PTR AND ENTITYX_USE_STD_SHARED_PTR)
     message("-- Using std::shared_ptr<T>")
 else()
-    if (USE_STD_SHARED_PTR)
+    if (ENTITYX_USE_STD_SHARED_PTR)
         message("-- Using boost::shared_ptr<T> (std::shared_ptr<T> could not be used)")
     else()
-        message("-- Using boost::shared_ptr<T> (try -DUSE_STD_SHARED_PTR=1 to use std::shared_ptr<T>)")
+        message("-- Using boost::shared_ptr<T> (try -DENTITYX_USE_STD_SHARED_PTR=1 to use std::shared_ptr<T>)")
     endif()
 endif()
 
@@ -141,8 +141,7 @@ include_directories(
     ${GTest_INCLUDE_DIR}
     )
 
-set(BUILD_TESTING false CACHE BOOL "Enable building of tests")
-if (BUILD_TESTING)
+if (ENTITYX_BUILD_TESTING)
     find_package(Boost 1.48.0 REQUIRED COMPONENTS signals timer system)
     add_subdirectory(gtest-1.6.0)
     include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
@@ -151,13 +150,13 @@ if (BUILD_TESTING)
     create_test(event_test entityx/Event_test.cc)
     create_test(system_test entityx/System_test.cc)
     create_test(tags_component_test entityx/tags/TagsComponent_test.cc)
-    if (RUN_BENCHMARKS)
+    if (ENTITYX_RUN_BENCHMARKS)
         message("-- Running benchmarks")
         create_test(benchmarks_test entityx/Benchmarks_test.cc)
     else ()
-        message("-- Not running benchmarks (use -DRUN_BENCHMARKS=1 to enable)")
+        message("-- Not running benchmarks (use -DENTITYX_RUN_BENCHMARKS=1 to enable)")
     endif ()
-endif (BUILD_TESTING)
+endif (ENTITYX_BUILD_TESTING)
 
 file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/entityx/*.h")
 
