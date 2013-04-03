@@ -195,7 +195,7 @@ struct ComponentAddedEvent : public Event<ComponentAddedEvent<T>> {
  */
 class EntityManager : public entityx::enable_shared_from_this<EntityManager>, boost::noncopyable {
  public:
-  typedef std::bitset<MAX_COMPONENTS> ComponentMask;
+  typedef std::bitset<entityx::MAX_COMPONENTS> ComponentMask;
 
   static entityx::shared_ptr<EntityManager> make(entityx::shared_ptr<EventManager> event_manager) {
     return entityx::shared_ptr<EntityManager>(new EntityManager(event_manager));
@@ -515,7 +515,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
 template <typename C>
 BaseComponent::Family Component<C>::family() {
   static Family family = family_counter_++;
-  assert(family < EntityManager::MAX_COMPONENTS);
+  assert(family < entityx::MAX_COMPONENTS);
   return family;
 }
 
