@@ -36,14 +36,14 @@ class BaseSystem : boost::noncopyable {
    *
    * Typically used to set up event handlers.
    */
-  virtual void configure(EventManager &events) {}
+  virtual void configure(entityx::shared_ptr<EventManager> events) {}
 
   /**
    * Apply System behavior.
    *
    * Called every game step.
    */
-  virtual void update(entityx::shared_ptr<EntityManager> entities, EventManager &events, double dt) = 0;
+  virtual void update(entityx::shared_ptr<EntityManager> entities, entityx::shared_ptr<EventManager> events, double dt) = 0;
 
   static Family family_counter_;
 
@@ -74,7 +74,10 @@ class System : public BaseSystem {
 
 class SystemManager : boost::noncopyable {
  public:
-  SystemManager(entityx::shared_ptr<EntityManager> entities, EventManager &events) : entities_(entities), events_(events) {}
+  SystemManager(entityx::shared_ptr<EntityManager> entity_manager,
+                entityx::shared_ptr<EventManager> event_manager) :
+                entity_manager_(entity_manager),
+                event_manager_(event_manager) {}
 
   /**
    * Add a System to the SystemManager.
@@ -128,7 +131,7 @@ class SystemManager : boost::noncopyable {
   void update(double dt) {
     assert(initialized_ && "SystemManager::configure() not called");
     entityx::shared_ptr<S> s = system<S>();
-    s->update(entities_, events_, dt);
+    s->update(entity_manager_, event_manager_, dt);
   }
 
   /**
@@ -140,8 +143,8 @@ class SystemManager : boost::noncopyable {
 
  private:
   bool initialized_ = false;
-  entityx::shared_ptr<EntityManager> entities_;
-  EventManager &events_;
+  entityx::shared_ptr<EntityManager> entity_manager_;
+  entityx::shared_ptr<EventManager> event_manager_;
   boost::unordered_map<BaseSystem::Family, entityx::shared_ptr<BaseSystem>> systems_;
 };
 

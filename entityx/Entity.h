@@ -201,7 +201,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
 
   typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
-  static entityx::shared_ptr<EntityManager> make(EventManager &event_manager) {
+  static entityx::shared_ptr<EntityManager> make(entityx::shared_ptr<EventManager> event_manager) {
     return entityx::shared_ptr<EntityManager>(new EntityManager(event_manager));
   }
 
@@ -342,7 +342,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
       id = free_list_.front();
       free_list_.pop_front();
     }
-    event_manager_.emit<EntityCreatedEvent>(Entity(shared_from_this(), id));
+    event_manager_->emit<EntityCreatedEvent>(Entity(shared_from_this(), id));
     return Entity(shared_from_this(), id);
   }
 
@@ -353,7 +353,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
    */
   void destroy(Entity::Id entity) {
     assert(entity < entity_component_mask_.size() && "Entity::Id ID outside entity vector range");
-    event_manager_.emit<EntityDestroyedEvent>(Entity(shared_from_this(), entity));
+    event_manager_->emit<EntityDestroyedEvent>(Entity(shared_from_this(), entity));
     for (auto &components : entity_components_) {
       components.at(entity).reset();
     }
@@ -377,7 +377,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
     entity_components_.at(C::family()).at(entity) = base;
     entity_component_mask_.at(entity) |= uint64_t(1) << C::family();
 
-    event_manager_.emit<ComponentAddedEvent<C>>(Entity(shared_from_this(), entity), component);
+    event_manager_->emit<ComponentAddedEvent<C>>(Entity(shared_from_this(), entity), component);
     return component;
   }
 
@@ -462,7 +462,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
   }
 
  private:
-  EntityManager(EventManager &event_manager) : event_manager_(event_manager) {}
+  EntityManager(entityx::shared_ptr<EventManager> event_manager) : event_manager_(event_manager) {}
 
 
   template <typename C>
@@ -507,7 +507,7 @@ class EntityManager : public entityx::enable_shared_from_this<EntityManager>, bo
 
   Entity::Id id_counter_ = 0;
 
-  EventManager &event_manager_;
+  entityx::shared_ptr<EventManager> event_manager_;
   // A nested array of: components = entity_components_[family][entity]
   std::vector<std::vector<entityx::shared_ptr<BaseComponent>>> entity_components_;
   // Bitmask of components associated with each entity. Index into the vector is the Entity::Id.

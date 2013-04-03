@@ -9,9 +9,9 @@ using namespace entityx;
 
 class BenchmarksTest : public ::testing::Test {
 protected:
- BenchmarksTest() : em(EntityManager::make(ev)) {}
+ BenchmarksTest() : ev(EventManager::make()), em(EntityManager::make(ev)) {}
 
- EventManager ev;
+ shared_ptr<EventManager> ev;
  shared_ptr<EntityManager> em;
 };
 
@@ -50,7 +50,7 @@ struct Listener : public Receiver<Listener> {
 
 TEST_F(BenchmarksTest, TestCreateEntitiesWithListener) {
   Listener listen;
-  ev.subscribe<EntityCreatedEvent>(listen);
+  ev->subscribe<EntityCreatedEvent>(listen);
 
   uint64_t count = 10000000L;
 
@@ -65,7 +65,7 @@ TEST_F(BenchmarksTest, TestCreateEntitiesWithListener) {
 
 TEST_F(BenchmarksTest, TestDestroyEntitiesWithListener) {
   Listener listen;
-  ev.subscribe<EntityDestroyedEvent>(listen);
+  ev->subscribe<EntityDestroyedEvent>(listen);
 
   uint64_t count = 10000000L;
   vector<Entity> entities;

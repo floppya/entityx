@@ -40,8 +40,7 @@ TEST(TagsComponentTest, TestVariadicConstruction) {
 }
 
 TEST(TagsComponentTest, TestEntitiesWithTag) {
-  EventManager ev;
-  auto en = EntityManager::make(ev);
+  auto en = EntityManager::make(EventManager::make());
   Entity a = en->create();
   a.assign<Position>();
   for (int i = 0; i < 99; ++i) {

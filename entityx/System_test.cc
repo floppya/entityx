@@ -37,7 +37,7 @@ class MovementSystem : public System<MovementSystem> {
  public:
   MovementSystem(string label = "") : label(label) {}
 
-  void update(shared_ptr<EntityManager> es, EventManager &events, double) override {
+  void update(shared_ptr<EntityManager> es, shared_ptr<EventManager> events, double) override {
     EntityManager::View entities = es->entities_with_components<Position, Direction>();
     shared_ptr<Position> position;
     shared_ptr<Direction> direction;

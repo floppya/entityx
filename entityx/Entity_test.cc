@@ -64,9 +64,9 @@ ostream &operator << (ostream &out, const Direction &direction) {
 
 class EntityManagerTest : public ::testing::Test {
  protected:
-  EntityManagerTest() : em(EntityManager::make(ev)) {}
+  EntityManagerTest() : ev(EventManager::make()), em(EntityManager::make(ev)) {}
 
-  EventManager ev;
+  entityx::shared_ptr<EventManager> ev;
   entityx::shared_ptr<EntityManager> em;
 
   virtual void SetUp() {
@@ -253,7 +253,7 @@ TEST_F(EntityManagerTest, TestEntityCreatedEvent) {
   };
 
   EntityCreatedEventReceiver receiver;
-  ev.subscribe<EntityCreatedEvent>(receiver);
+  ev->subscribe<EntityCreatedEvent>(receiver);
 
   ASSERT_EQ(0UL, receiver.created.size());
   for (int i = 0; i < 10; ++i) {
@@ -272,7 +272,7 @@ TEST_F(EntityManagerTest, TestEntityDestroyedEvent) {
   };
 
   EntityDestroyedEventReceiver receiver;
-  ev.subscribe<EntityDestroyedEvent>(receiver);
+  ev->subscribe<EntityDestroyedEvent>(receiver);
 
   ASSERT_EQ(0UL, receiver.destroyed.size());
   vector<Entity> entities;
@@ -309,8 +309,8 @@ TEST_F(EntityManagerTest, TestComponentAddedEvent) {
   };
 
   ComponentAddedEventReceiver receiver;
-  ev.subscribe<ComponentAddedEvent<Position>>(receiver);
-  ev.subscribe<ComponentAddedEvent<Direction>>(receiver);
+  ev->subscribe<ComponentAddedEvent<Position>>(receiver);
+  ev->subscribe<ComponentAddedEvent<Direction>>(receiver);
 
   ASSERT_NE(ComponentAddedEvent<Position>::family(),
             ComponentAddedEvent<Direction>::family());
