@@ -21,7 +21,7 @@ void Entity::invalidate() {
 }
 
 void Entity::destroy() {
-  manager_->destroy(id_);
+  manager_.lock()->destroy(id_);
   invalidate();
 }
 

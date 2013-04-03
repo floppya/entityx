@@ -61,11 +61,11 @@ class Entity {
   }
 
   bool operator == (const Entity &other) const {
-    return other.manager_ == manager_ && other.id_ == id_;
+    return other.manager_.lock() == manager_.lock() && other.id_ == id_;
   }
 
   bool operator != (const Entity &other) const {
-    return other.manager_ != manager_ || other.id_ != id_;
+    return !(other == *this);
   }
 
   /**
@@ -75,7 +75,7 @@ class Entity {
    * the same, or is valid in any way.
    */
   bool valid() const {
-    return manager_ != nullptr && id_ != INVALID;
+    return !manager_.expired() && id_ != INVALID;
   }
 
   /**
@@ -86,7 +86,6 @@ class Entity {
   void invalidate();
 
   Id id() const { return id_; }
-  entityx::shared_ptr<EntityManager> manager() { return manager_; }
 
   template <typename C>
   entityx::shared_ptr<C> assign(entityx::shared_ptr<C> component);
@@ -111,7 +110,7 @@ class Entity {
 
   Entity(entityx::shared_ptr<EntityManager> manager, Entity::Id id) : manager_(manager), id_(id) {}
 
-  entityx::shared_ptr<EntityManager> manager_;
+  entityx::weak_ptr<EntityManager> manager_;
   Entity::Id id_ = INVALID;
 };
 
@@ -525,27 +524,27 @@ BaseComponent::Family Component<C>::family() {
 
 template <typename C>
 entityx::shared_ptr<C> Entity::assign(entityx::shared_ptr<C> component) {
-  return manager_->assign<C>(id_, component);
+  return manager_.lock()->assign<C>(id_, component);
 }
 
 template <typename C, typename ... Args>
 entityx::shared_ptr<C> Entity::assign(Args && ... args) {
-  return manager_->assign<C>(id_, args ...);
+  return manager_.lock()->assign<C>(id_, args ...);
 }
 
 template <typename C>
 entityx::shared_ptr<C> Entity::component() {
-  return manager_->component<C>(id_);
+  return manager_.lock()->component<C>(id_);
 }
 
 template <typename A>
 void Entity::unpack(entityx::shared_ptr<A> &a) {
-  manager_->unpack(id_, a);
+  manager_.lock()->unpack(id_, a);
 }
 
 template <typename A, typename B, typename ... Args>
 void Entity::unpack(entityx::shared_ptr<A> &a, entityx::shared_ptr<B> &b, Args && ... args) {
-  manager_->unpack(id_, a, b, args ...);
+  manager_.lock()->unpack(id_, a, b, args ...);
 }
 
 }
