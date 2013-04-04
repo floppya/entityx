@@ -141,17 +141,17 @@ TEST_F(EntityManagerTest, TestDestroyEntity) {
   ASSERT_EQ(2, ep.use_count());
   ASSERT_TRUE(e.valid());
   ASSERT_TRUE(f.valid());
-  ASSERT_TRUE(e.component<Position>());
-  ASSERT_TRUE(e.component<Direction>());
-  ASSERT_TRUE(f.component<Position>());
-  ASSERT_TRUE(f.component<Direction>());
+  ASSERT_TRUE(bool(e.component<Position>()));
+  ASSERT_TRUE(bool(e.component<Direction>()));
+  ASSERT_TRUE(bool(f.component<Position>()));
+  ASSERT_TRUE(bool(f.component<Direction>()));
 
   e.destroy();
 
   ASSERT_FALSE(e.valid());
   ASSERT_TRUE(f.valid());
-  ASSERT_TRUE(f.component<Position>());
-  ASSERT_TRUE(f.component<Direction>());
+  ASSERT_TRUE(bool(f.component<Position>()));
+  ASSERT_TRUE(bool(f.component<Direction>()));
   ASSERT_EQ(1, ep.use_count());
 }
 
@@ -188,7 +188,7 @@ TEST_F(EntityManagerTest, TestGetEntitiesWithComponentAndUnpacking) {
   Entity e = em->create();
   Entity f = em->create();
   Entity g = em->create();
-  std::vector<std::pair<shared_ptr<Position>, shared_ptr<Direction>>> position_directions;
+  std::vector<std::pair<entityx::shared_ptr<Position>, entityx::shared_ptr<Direction>>> position_directions;
   position_directions.push_back(std::make_pair(
           e.assign<Position>(1.0f, 2.0f),
           e.assign<Direction>(3.0f, 4.0f)));
@@ -198,12 +198,12 @@ TEST_F(EntityManagerTest, TestGetEntitiesWithComponentAndUnpacking) {
   g.assign<Position>(5.0f, 6.0f);
   int i = 0;
 
-  shared_ptr<Position> position;
-  shared_ptr<Direction> direction;
+  entityx::shared_ptr<Position> position;
+  entityx::shared_ptr<Direction> direction;
   for (auto unused_entity : em->entities_with_components(position, direction)) {
     (void)unused_entity;
-    ASSERT_TRUE(position);
-    ASSERT_TRUE(direction);
+    ASSERT_TRUE(bool(position));
+    ASSERT_TRUE(bool(direction));
     auto pd = position_directions.at(i);
     ASSERT_EQ(position, pd.first);
     ASSERT_EQ(direction, pd.second);
@@ -217,8 +217,8 @@ TEST_F(EntityManagerTest, TestUnpack) {
   auto p = e.assign<Position>();
   auto d = e.assign<Direction>();
 
-  shared_ptr<Position> up;
-  shared_ptr<Direction> ud;
+  entityx::shared_ptr<Position> up;
+  entityx::shared_ptr<Direction> ud;
   e.unpack<Position, Direction>(up, ud);
   ASSERT_EQ(p, up);
   ASSERT_EQ(d, ud);
@@ -231,11 +231,11 @@ TEST_F(EntityManagerTest, TestUnpackNullMissing) {
   Entity e = em->create();
   auto p = e.assign<Position>();
 
-  shared_ptr<Position> up(reinterpret_cast<Position*>(0Xdeadbeef), NullDeleter());
-  shared_ptr<Direction> ud(reinterpret_cast<Direction*>(0Xdeadbeef), NullDeleter());
+  entityx::shared_ptr<Position> up(reinterpret_cast<Position*>(0Xdeadbeef), NullDeleter());
+  entityx::shared_ptr<Direction> ud(reinterpret_cast<Direction*>(0Xdeadbeef), NullDeleter());
   e.unpack<Position, Direction>(up, ud);
   ASSERT_EQ(p, up);
-  ASSERT_EQ(shared_ptr<Direction>(), ud);
+  ASSERT_EQ(entityx::shared_ptr<Direction>(), ud);
 }
 
 TEST_F(EntityManagerTest, TestComponentIdsDiffer) {

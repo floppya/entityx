@@ -11,8 +11,8 @@ class BenchmarksTest : public ::testing::Test {
 protected:
  BenchmarksTest() : ev(EventManager::make()), em(EntityManager::make(ev)) {}
 
- shared_ptr<EventManager> ev;
- shared_ptr<EntityManager> em;
+ entityx::shared_ptr<EventManager> ev;
+ entityx::shared_ptr<EntityManager> em;
 };
 
 
