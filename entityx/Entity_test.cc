@@ -11,7 +11,6 @@
 #include <iterator>
 #include <string>
 #include <vector>
-#include <boost/ref.hpp>
 #include <gtest/gtest.h>
 #include "entityx/Entity.h"
 
@@ -124,7 +123,7 @@ TEST_F(EntityManagerTest, TestComponentConstruction) {
 
 TEST_F(EntityManagerTest, TestComponentCreationWithObject) {
   auto e = em->create();
-  auto p = e.assign(make_shared<Position>(1.0, 2.0));
+  auto p = e.assign(entityx::make_shared<Position>(1.0, 2.0));
   auto cp = e.component<Position>();
   ASSERT_EQ(p, cp);
   ASSERT_FLOAT_EQ(1.0, cp->x);

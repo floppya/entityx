@@ -119,7 +119,7 @@ class EventManager : public entityx::enable_shared_from_this<EventManager>, boos
    *
    * eg.
    *
-   * shared_ptr<EventManager> em(make_shared<EventManager>());
+   * entityx::shared_ptr<EventManager> em(entityx::make_shared<EventManager>());
    * em->emit<Explosion>(10);
    *
    */
